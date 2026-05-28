@@ -1,0 +1,16 @@
+{
+  // Formata com Prettier ao salvar
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // Aplica correções do ESLint ao salvar (aspas, semi, etc.)
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // ESLint valida arquivos TypeScript
+  "eslint.validate": [
+    "typescript",
+    "typescriptreact"
+  ]
+}

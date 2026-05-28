@@ -9,7 +9,8 @@
     "lint:fix": "eslint src/ --fix",
     "lint:strict": "eslint src/ --max-warnings 0",
     "format": "prettier --write src/",
-    "check": "tsc --noEmit && eslint src/"
+    "check": "tsc --noEmit && eslint src/",
+    "knex": "tsx node_modules/knex/bin/cli.js --knexfile knexfile.ts"
   },
   "keywords": [],
   "author": "",
@@ -31,6 +32,8 @@
     "typescript-eslint": "^8.60.0"
   },
   "dependencies": {
-    "fastify": "^5.8.5"
+    "fastify": "^5.8.5",
+    "knex": "^3.2.10",
+    "sqlite3": "^6.0.1"
   }
 }

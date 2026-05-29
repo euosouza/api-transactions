@@ -1,0 +1,440 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "API Transactions",
+    "description": "Coleção de rotas para a API de transações financeiras.\n\n## Autenticação\nEsta API utiliza **cookies de sessão** (`sessionId`) para autenticação.\n\nO cookie é gerado automaticamente ao criar a primeira transação (`POST /transactions`) e deve ser enviado nas demais requisições.\n\n## Como usar\n1. Execute `POST /transactions` para criar uma transação — o cookie de sessão será salvo automaticamente pelo Postman.\n2. Use as demais rotas normalmente (o Postman enviará o cookie automaticamente).\n\n## Variáveis\n- `baseUrl`: URL base da API (padrão: `http://localhost:3000`)\n- `transactionId`: ID de uma transação (UUID) para usar nas rotas `:id`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "URL base da API"
+    },
+    {
+      "key": "transactionId",
+      "value": "",
+      "type": "string",
+      "description": "ID de uma transação (UUID). Preenchido automaticamente ao listar transações."
+    }
+  ],
+  "item": [
+    {
+      "name": "Transactions",
+      "description": "Endpoints para gerenciamento de transações financeiras",
+      "item": [
+        {
+          "name": "Criar Transação (crédito)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "// Salva o cookie de sessão automaticamente",
+                  "const cookie = pm.cookies.get('sessionId');",
+                  "if (cookie) {",
+                  "    pm.collectionVariables.set('sessionId', cookie);",
+                  "    console.log('Cookie de sessão salvo:', cookie);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Salário\",\n  \"amount\": 5000,\n  \"type\": \"credit\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions"]
+            },
+            "description": "Cria uma nova transação de **crédito**.\n\nApós criar a primeira transação, o Postman salva automaticamente o cookie `sessionId` que será utilizado nas demais requisições.\n\n**Body:**\n- `title` (string, obrigatório): Título da transação\n- `amount` (number, obrigatório): Valor da transação\n- `type` (\"credit\" | \"debit\", obrigatório): Tipo da transação\n\n**Resposta:** `201 Created` (sem corpo)"
+          },
+          "response": [
+            {
+              "name": "201 - Transação criada",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Salário\",\n  \"amount\": 5000,\n  \"type\": \"credit\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/transactions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Criar Transação (débito)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Aluguel\",\n  \"amount\": 1500,\n  \"type\": \"debit\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions"]
+            },
+            "description": "Cria uma nova transação de **débito**.\n\nO valor será armazenado como negativo internamente.\n\n**Resposta:** `201 Created` (sem corpo)"
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Todas as Transações",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Resposta contém array de transações\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('transactions');",
+                  "    pm.expect(jsonData.transactions).to.be.an('array');",
+                  "});",
+                  "",
+                  "// Salva o ID da primeira transação para usar nas rotas /:id",
+                  "const jsonData = pm.response.json();",
+                  "if (jsonData.transactions && jsonData.transactions.length > 0) {",
+                  "    const firstId = jsonData.transactions[0].id;",
+                  "    pm.collectionVariables.set('transactionId', firstId);",
+                  "    console.log('ID salvo:', firstId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions"]
+            },
+            "description": "Lista todas as transações da sessão atual.\n\n⚠️ **Requer cookie de sessão** (`sessionId`). Crie uma transação primeiro.\n\nO script de teste salva automaticamente o ID da primeira transação na variável `transactionId`.\n\n**Resposta:** `200 OK`\n```json\n{\n  \"transactions\": [\n    {\n      \"id\": \"uuid\",\n      \"title\": \"Salário\",\n      \"amount\": 5000,\n      \"session_id\": \"uuid\",\n      \"created_at\": \"...\"\n    }\n  ]\n}\n```"
+          },
+          "response": [
+            {
+              "name": "200 - Lista de transações",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/transactions",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"transactions\": [\n    {\n      \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n      \"title\": \"Salário\",\n      \"amount\": 5000,\n      \"session_id\": \"550e8400-e29b-41d4-a716-446655440001\",\n      \"created_at\": \"2026-05-29T20:00:00.000Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Buscar Transação por ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Resposta contém dados da transação\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('title');",
+                  "    pm.expect(jsonData).to.have.property('amount');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions/{{transactionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "{{transactionId}}"]
+            },
+            "description": "Busca uma transação específica pelo ID (UUID).\n\n⚠️ **Requer cookie de sessão** (`sessionId`).\n\nUsa a variável `{{transactionId}}` — preenchida automaticamente ao listar transações.\n\n**Parâmetros:**\n- `id` (UUID, obrigatório): ID da transação\n\n**Resposta:** `200 OK`\n```json\n{\n  \"id\": \"uuid\",\n  \"title\": \"Salário\",\n  \"amount\": 5000,\n  \"session_id\": \"uuid\",\n  \"created_at\": \"...\"\n}\n```"
+          },
+          "response": [
+            {
+              "name": "200 - Transação encontrada",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/transactions/{{transactionId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions", "{{transactionId}}"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"title\": \"Salário\",\n  \"amount\": 5000,\n  \"session_id\": \"550e8400-e29b-41d4-a716-446655440001\",\n  \"created_at\": \"2026-05-29T20:00:00.000Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Sumário de Transações",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Resposta contém saldo total\", function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('amount');",
+                  "    pm.expect(jsonData.amount).to.be.a('number');",
+                  "    console.log('Saldo total:', jsonData.amount);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "summary"]
+            },
+            "description": "Retorna o saldo total (soma de todos os créditos menos todos os débitos) da sessão atual.\n\n⚠️ **Requer cookie de sessão** (`sessionId`).\n\n**Resposta:** `200 OK`\n```json\n{\n  \"amount\": 3500\n}\n```"
+          },
+          "response": [
+            {
+              "name": "200 - Sumário",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/transactions/summary",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions", "summary"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"amount\": 3500\n}"
+            }
+          ]
+        },
+        {
+          "name": "Atualizar Transação",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Salário atualizado\",\n  \"amount\": 6000,\n  \"type\": \"credit\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transactions/{{transactionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "{{transactionId}}"]
+            },
+            "description": "Atualiza o título, valor e tipo de uma transação existente.\n\nUsa a variável `{{transactionId}}` — preenchida automaticamente ao listar transações.\n\n**Parâmetros:**\n- `id` (UUID, obrigatório): ID da transação\n\n**Body:**\n- `title` (string, obrigatório): Novo título\n- `amount` (number, obrigatório): Novo valor\n- `type` (\"credit\" | \"debit\", obrigatório): Novo tipo\n\n**Resposta:** `204 No Content` (sem corpo)"
+          },
+          "response": [
+            {
+              "name": "204 - Transação atualizada",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Salário atualizado\",\n  \"amount\": 6000,\n  \"type\": \"credit\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/transactions/{{transactionId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions", "{{transactionId}}"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Deletar Transação",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code é 204\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "// Limpa o transactionId após deletar",
+                  "pm.collectionVariables.set('transactionId', '');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions/{{transactionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["transactions", "{{transactionId}}"]
+            },
+            "description": "Remove permanentemente uma transação pelo ID.\n\nUsa a variável `{{transactionId}}` — preenchida automaticamente ao listar transações.\n\n**Parâmetros:**\n- `id` (UUID, obrigatório): ID da transação a ser removida\n\n**Resposta:** `204 No Content` (sem corpo)"
+          },
+          "response": [
+            {
+              "name": "204 - Transação deletada",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/transactions/{{transactionId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transactions", "{{transactionId}}"]
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -10,7 +10,8 @@
     "lint:strict": "eslint src/ --max-warnings 0",
     "format": "prettier --write src/",
     "check": "tsc --noEmit && eslint src/",
-    "knex": "tsx node_modules/knex/bin/cli.js --knexfile knexfile.ts"
+    "knex": "tsx node_modules/knex/bin/cli.js --knexfile knexfile.ts",
+    "test": "vitest"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^25.9.1",
+    "@types/supertest": "^7.2.0",
     "@typescript-eslint/eslint-plugin": "^8.60.0",
     "@typescript-eslint/parser": "^8.60.0",
     "eslint": "^10.4.0",
@@ -27,6 +29,7 @@
     "globals": "^17.6.0",
     "jiti": "^2.7.0",
     "prettier": "^3.8.3",
+    "supertest": "^7.2.2",
     "tsx": "^4.22.3",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.60.0",

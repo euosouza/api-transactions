@@ -1,4 +1,6 @@
 node_modules
 db/db.sqlite
+db/test.db
 
 .env
+.env.test
